@@ -4,8 +4,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,6 +25,9 @@ class GatewaySecurityTest {
 
     @Autowired
     WebTestClient client;
+
+    @Autowired
+    ApplicationContext context;
 
     @Test
     void protectedRoute_withoutToken_returns401Json_withCorrelationId() {
@@ -47,6 +52,20 @@ class GatewaySecurityTest {
         assertPassesSecurity(client.get().uri("/api/v1/flowers").exchange().returnResult(Void.class).getStatus());
         assertPassesSecurity(client.post().uri("/api/v1/auth/login").exchange().returnResult(Void.class).getStatus());
         assertPassesSecurity(client.get().uri("/.well-known/jwks.json").exchange().returnResult(Void.class).getStatus());
+    }
+
+    @Test
+    void internalApis_areDenied_evenWithValidToken() {
+        WebTestClient withSecurity = WebTestClient.bindToApplicationContext(context)
+                .apply(SecurityMockServerConfigurers.springSecurity()).configureClient().build();
+
+        withSecurity.mutateWith(SecurityMockServerConfigurers.mockJwt())
+                .post().uri("/internal/v1/service-token").exchange()
+                .expectStatus().isForbidden()
+                .expectBody().jsonPath("$.code").isEqualTo("COM-403-001");
+        // Đối chứng: cùng token đó, API thường vẫn qua được lớp security
+        assertPassesSecurity(withSecurity.mutateWith(SecurityMockServerConfigurers.mockJwt())
+                .get().uri("/api/v1/customers/me").exchange().returnResult(Void.class).getStatus());
     }
 
     private static void assertPassesSecurity(HttpStatusCode status) {

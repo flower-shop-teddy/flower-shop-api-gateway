@@ -28,6 +28,9 @@ public class SecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)
                 .authorizeExchange(ex -> ex
+                        // API nội bộ giữa các service (vd /internal/v1/service-token): không bao giờ đi qua cửa vào,
+                        // kể cả có token hợp lệ. Hiện cũng không có route, luật này chặn trước nếu sau này lỡ thêm route rộng.
+                        .pathMatchers("/internal/**").denyAll()
                         // Đăng nhập, đăng ký... thì làm gì đã có token
                         .pathMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/refresh",
                                 "/api/v1/auth/logout", "/api/v1/auth/register").permitAll()
