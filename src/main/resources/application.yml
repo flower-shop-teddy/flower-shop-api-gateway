@@ -18,6 +18,10 @@ spring:
               uri: lb://customer-service
               predicates:
                 - Path=/api/v1/customers/**
+            - id: inventory-service
+              uri: lb://inventory-service
+              predicates:
+                - Path=/api/v1/inventory/**
             - id: identity-service
               uri: lb://identity-service
               predicates:

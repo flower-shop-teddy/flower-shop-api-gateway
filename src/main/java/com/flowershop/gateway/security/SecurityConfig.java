@@ -37,6 +37,8 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.GET, "/.well-known/jwks.json").permitAll()
                         // Khách chưa đăng nhập vẫn xem được danh mục hoa
                         .pathMatchers(HttpMethod.GET, "/api/v1/flowers", "/api/v1/flowers/**").permitAll()
+                        // ...và xem sản phẩm còn hàng không (chỉ còn/hết, không lộ số lượng)
+                        .pathMatchers(HttpMethod.GET, "/api/v1/inventory/availability").permitAll()
                         .pathMatchers("/actuator/health/**", "/actuator/info").permitAll()
                         .anyExchange().authenticated())
                 .oauth2ResourceServer(rs -> rs

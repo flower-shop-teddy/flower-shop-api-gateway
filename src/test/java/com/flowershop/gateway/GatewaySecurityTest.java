@@ -52,6 +52,14 @@ class GatewaySecurityTest {
         assertPassesSecurity(client.get().uri("/api/v1/flowers").exchange().returnResult(Void.class).getStatus());
         assertPassesSecurity(client.post().uri("/api/v1/auth/login").exchange().returnResult(Void.class).getStatus());
         assertPassesSecurity(client.get().uri("/.well-known/jwks.json").exchange().returnResult(Void.class).getStatus());
+        assertPassesSecurity(client.get().uri("/api/v1/inventory/availability?sku=X").exchange()
+                .returnResult(Void.class).getStatus());
+    }
+
+    @Test
+    void inventoryManagementApis_requireToken() {
+        client.get().uri("/api/v1/inventory/stock?sku=X").exchange().expectStatus().isUnauthorized();
+        client.post().uri("/api/v1/inventory/lots").exchange().expectStatus().isUnauthorized();
     }
 
     @Test
