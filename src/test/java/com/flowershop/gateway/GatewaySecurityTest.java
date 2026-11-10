@@ -60,6 +60,8 @@ class GatewaySecurityTest {
     void inventoryManagementApis_requireToken() {
         client.get().uri("/api/v1/inventory/stock?sku=X").exchange().expectStatus().isUnauthorized();
         client.post().uri("/api/v1/inventory/lots").exchange().expectStatus().isUnauthorized();
+        client.post().uri("/api/v1/orders/me").exchange().expectStatus().isUnauthorized();
+        client.get().uri("/api/v1/orders").exchange().expectStatus().isUnauthorized();
     }
 
     @Test
